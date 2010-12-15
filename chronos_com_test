@@ -1,0 +1,30 @@
+#! /usr/bin/python
+
+import serial
+
+
+# Send command
+def send(pkg):
+				print '> ' + pkg.encode('hex')
+				ser.write(pkg)
+				ser.flushOutput()
+
+# Read a command
+def read():
+				pkg = ser.read(3)
+				print '< ' + pkg.encode('hex')
+				return pkg
+
+
+# Open serial port
+ser = serial.Serial(
+								port			= '/dev/ttyACM0',
+								baudrate	= 115200,
+								timeout		= 1)
+
+# Start acces point and wait to connect
+send('\xFF\x07\x03')
+r = read()
+
+# Close serial port
+ser.close()
