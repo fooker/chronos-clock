@@ -1,6 +1,10 @@
 package chronos.gui;
 
 import chronos.Controller;
+import java.awt.Cursor;
+import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.SwingWorker;
 
 public class MainFrame extends javax.swing.JFrame implements Controller.Listener {
 
@@ -47,6 +51,9 @@ public class MainFrame extends javax.swing.JFrame implements Controller.Listener
     connectToggleButton = new javax.swing.JToggleButton();
     jSeparator1 = new javax.swing.JToolBar.Separator();
     syncButton = new javax.swing.JButton();
+    clearButton = new javax.swing.JButton();
+    exportButton = new javax.swing.JButton();
+    jButton1 = new javax.swing.JButton();
     jSplitPane1 = new javax.swing.JSplitPane();
     jTabbedPane1 = new javax.swing.JTabbedPane();
     jPanel1 = new javax.swing.JPanel();
@@ -107,6 +114,41 @@ public class MainFrame extends javax.swing.JFrame implements Controller.Listener
       }
     });
     jToolBar1.add(syncButton);
+
+    clearButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/chronos/gui/icons/edit-delete.png"))); // NOI18N
+    clearButton.setText("Clear");
+    clearButton.setEnabled(false);
+    clearButton.setFocusable(false);
+    clearButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    clearButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        clearButtonActionPerformed(evt);
+      }
+    });
+    jToolBar1.add(clearButton);
+
+    exportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/chronos/gui/icons/document-save-as.png"))); // NOI18N
+    exportButton.setText("Export");
+    exportButton.setEnabled(false);
+    exportButton.setFocusable(false);
+    exportButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    exportButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        exportButtonActionPerformed(evt);
+      }
+    });
+    jToolBar1.add(exportButton);
+
+    jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/chronos/gui/icons/document-open.png"))); // NOI18N
+    jButton1.setText("Import");
+    jButton1.setFocusable(false);
+    jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    jButton1.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton1ActionPerformed(evt);
+      }
+    });
+    jToolBar1.add(jButton1);
 
     getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
 
@@ -296,19 +338,67 @@ public class MainFrame extends javax.swing.JFrame implements Controller.Listener
 
   private void connectToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectToggleButtonActionPerformed
     Controller.getInstance().setDevice((String) this.deviceComboBox.getSelectedItem());
-    
+
     Controller.getInstance().setConnected(this.connectToggleButton.isSelected());
     this.connectToggleButton.setSelected(Controller.getInstance().isConnected());
   }//GEN-LAST:event_connectToggleButtonActionPerformed
 
   private void syncButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncButtonActionPerformed
-    Controller.getInstance().sync();
+    final SyncProgressDialog dialog = new SyncProgressDialog(this, false);
+
+    SwingWorker<Void, Void> sw = new SwingWorker() {
+
+      @Override
+      protected Object doInBackground() throws Exception {
+        Controller.getInstance().sync();
+        return null;
+      }
+
+      @Override
+      protected void done() {
+        dialog.setVisible(false);
+      }
+    };
+    sw.execute();
+
+    this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    dialog.setVisible(true);
+
+    this.setCursor(Cursor.getDefaultCursor());
+
+    this.clearButton.setEnabled(true);
+    this.exportButton.setEnabled(true);
   }//GEN-LAST:event_syncButtonActionPerformed
 
+  private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+    Controller.getInstance().clear();
+  }//GEN-LAST:event_clearButtonActionPerformed
+
+  private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+    JFileChooser fc = new JFileChooser();
+    fc.showSaveDialog(this);
+
+    File f = fc.getSelectedFile();
+
+    Controller.getInstance().exportFile(f);
+  }//GEN-LAST:event_exportButtonActionPerformed
+
+  private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    JFileChooser fc = new JFileChooser();
+    fc.showOpenDialog(this);
+
+    File f = fc.getSelectedFile();
+
+    Controller.getInstance().importFile(f);
+  }//GEN-LAST:event_jButton1ActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton clearButton;
   private javax.swing.JToggleButton connectToggleButton;
   private javax.swing.JComboBox deviceComboBox;
   private chronos.gui.DeviceComboBoxModel deviceComboBoxModel;
+  private javax.swing.JButton exportButton;
+  private javax.swing.JButton jButton1;
   private javax.swing.JLabel jLabel10;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
@@ -378,5 +468,6 @@ public class MainFrame extends javax.swing.JFrame implements Controller.Listener
     doc.append("</font></body></html>");
 
     this.logTextPane.setText(doc.toString());
+    this.logTextPane.setAutoscrolls(true);
   }
 }

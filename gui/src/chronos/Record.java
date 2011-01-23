@@ -1,21 +1,19 @@
 package chronos;
 
-import java.util.Date;
-
 public class Record {
-  private Date timestamp;
-  private int movement;
+  private long timestamp;
+  private double movement;
 
-  public Record(Date timestamp, int movement) {
+  public Record(long timestamp, double movement) {
     this.timestamp = timestamp;
     this.movement = movement;
   }
 
-  public Date getTimestamp() {
+  public long getTimestamp() {
     return this.timestamp;
   }
 
-  public int getMovement() {
+  public double getMovement() {
     return this.movement;
   }
 }

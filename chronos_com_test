@@ -3,28 +3,64 @@
 import serial
 
 
-# Send command
-def send(pkg):
+# Send a command
+def send(cmd, data = ''):
+				pkg = '\xFF'
+				pkg += cmd
+				pkg += chr(len(data) + 3)
+				pkg += data
+				
 				print '> ' + pkg.encode('hex')
+				
 				ser.write(pkg)
 				ser.flushOutput()
+
 
 # Read a command
 def read():
 				pkg = ser.read(3)
 				print '< ' + pkg.encode('hex')
-				return pkg
+				if len(pkg) >= 3:
+								cmd = pkg[1]
+								
+								l = ord(pkg[2])
+								
+								data = ser.read(l)
+								print '<<< ' + data.encode('hex')
+								
+								return (cmd, data)
+								
+				else:
+								print '< ' + pkg.encode('hex')
+								return (None, None)
+
+
+# Define some constants
+RET_ERROR				= '\x05'
+RET_NO_ERROR		= '\x06'
 
 
 # Open serial port
 ser = serial.Serial(
 								port			= '/dev/ttyACM0',
 								baudrate	= 115200,
-								timeout		= 1)
+								timeout		= 10)
 
 # Start acces point and wait to connect
-send('\xFF\x07\x03')
-r = read()
+send('\x30')
+read()
+
+# Get status
+send('\x00', '\x00')
+read()
+
+# Read data block
+send('\x31', '\x02')
+read()
+
+# Close acces point
+send('\x09')
+read()
 
 # Close serial port
 ser.close()

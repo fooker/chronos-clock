@@ -64,7 +64,7 @@ public class RecordListTableModel extends AbstractTableModel {
         return rowIndex;
 
       case 1:
-        return this.records.get(rowIndex).getTimestamp();
+        return new Date(this.records.get(rowIndex).getTimestamp());
 
       case 2:
         return this.records.get(rowIndex).getMovement();
